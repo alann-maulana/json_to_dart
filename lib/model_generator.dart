@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:dart_style/dart_style.dart';
 import 'package:json_ast/json_ast.dart' show parse, Settings, Node;
 import 'package:json_to_dart/helpers.dart';
@@ -22,25 +23,25 @@ class Hint {
 class ModelGenerator {
   final String _rootClassName;
   final bool _privateFields;
-  List<ClassDefinition> allClasses = new List<ClassDefinition>();
+  List<ClassDefinition> allClasses = <ClassDefinition>[];
   final Map<String, String> sameClassMapping = new HashMap<String, String>();
-  List<Hint> hints;
+  late List<Hint> hints;
 
   ModelGenerator(this._rootClassName, [this._privateFields = false, hints]) {
     if (hints != null) {
       this.hints = hints;
     } else {
-      this.hints = new List<Hint>();
+      this.hints = <Hint>[];
     }
   }
 
-  Hint _hintForPath(String path) {
-    return this.hints.firstWhere((h) => h.path == path, orElse: () => null);
+  Hint? _hintForPath(String path) {
+    return this.hints.firstWhereOrNull((h) => h.path == path);
   }
 
-  List<Warning> _generateClassDefinition(
-      String className, dynamic jsonRawDynamicData, String path, Node astNode) {
-    List<Warning> warnings = new List<Warning>();
+  List<Warning> _generateClassDefinition(String className,
+      dynamic jsonRawDynamicData, String path, Node? astNode) {
+    List<Warning> warnings = <Warning>[];
     if (jsonRawDynamicData is List) {
       // if first element is an array, start in the first element.
       final node = navigateNode(astNode, '0');
@@ -68,13 +69,13 @@ class ModelGenerator {
         if (typeDef.subtype != null && typeDef.subtype == 'Class') {
           typeDef.subtype = camelCase(key);
         }
-        if (typeDef.isAmbiguous) {
+        if (typeDef.isAmbiguous!) {
           warnings.add(newAmbiguousListWarn('$path/$key'));
         }
         classDefinition.addField(key, typeDef);
       });
-      final similarClass = allClasses.firstWhere((cd) => cd == classDefinition,
-          orElse: () => null);
+      final similarClass =
+          allClasses.firstWhereOrNull((cd) => cd == classDefinition);
       if (similarClass != null) {
         final similarClassName = similarClass.name;
         final currentClassName = classDefinition.name;
@@ -84,14 +85,14 @@ class ModelGenerator {
       }
       final dependencies = classDefinition.dependencies;
       dependencies.forEach((dependency) {
-        List<Warning> warns;
+        List<Warning>? warns;
         if (dependency.typeDef.name == 'List') {
           // only generate dependency class if the array is not empty
           if (jsonRawData[dependency.name].length > 0) {
             // when list has ambiguous values, take the first one, otherwise merge all objects
             // into a single one
             dynamic toAnalyze;
-            if (!dependency.typeDef.isAmbiguous) {
+            if (!dependency.typeDef.isAmbiguous!) {
               WithWarning<Map> mergeWithWarning = mergeObjectList(
                   jsonRawData[dependency.name], '$path/${dependency.name}');
               toAnalyze = mergeWithWarning.result;
@@ -129,9 +130,9 @@ class ModelGenerator {
     allClasses.forEach((c) {
       final fieldsKeys = c.fields.keys;
       fieldsKeys.forEach((f) {
-        final typeForField = c.fields[f];
+        final typeForField = c.fields[f]!;
         if (sameClassMapping.containsKey(typeForField.name)) {
-          c.fields[f].name = sameClassMapping[typeForField.name];
+          c.fields[f]!.name = sameClassMapping[typeForField.name!];
         }
       });
     });

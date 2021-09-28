@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:json_ast/json_ast.dart' show Node;
 import 'package:json_to_dart/helpers.dart';
 
@@ -32,12 +33,12 @@ class WithWarning<T> {
 }
 
 class TypeDefinition {
-  String name;
-  String subtype;
-  bool isAmbiguous = false;
+  String? name;
+  String? subtype;
+  bool? isAmbiguous = false;
   bool _isPrimitive = false;
 
-  factory TypeDefinition.fromDynamic(dynamic obj, Node astNode) {
+  factory TypeDefinition.fromDynamic(dynamic obj, Node? astNode) {
     bool isAmbiguous = false;
     final type = getTypeName(obj);
     if (type == 'List') {
@@ -61,7 +62,7 @@ class TypeDefinition {
     return new TypeDefinition(type, astNode: astNode, isAmbiguous: isAmbiguous);
   }
 
-  TypeDefinition(this.name, {this.subtype, this.isAmbiguous, Node astNode}) {
+  TypeDefinition(this.name, {this.subtype, this.isAmbiguous, Node? astNode}) {
     if (subtype == null) {
       _isPrimitive = isPrimitiveType(this.name);
       if (this.name == 'int' && isASTLiteralDouble(astNode)) {
@@ -159,10 +160,10 @@ class ClassDefinition {
   bool get privateFields => _privateFields;
 
   List<Dependency> get dependencies {
-    final dependenciesList = new List<Dependency>();
+    final dependenciesList = <Dependency>[];
     final keys = fields.keys;
     keys.forEach((k) {
-      final f = fields[k];
+      final f = fields[k]!;
       if (!f.isPrimitive) {
         dependenciesList.add(new Dependency(k, f));
       }
@@ -184,9 +185,9 @@ class ClassDefinition {
     final List<String> keys = this.fields.keys.toList();
     final int len = keys.length;
     for (int i = 0; i < len; i++) {
-      TypeDefinition otherTypeDef = other.fields[keys[i]];
+      TypeDefinition? otherTypeDef = other.fields[keys[i]];
       if (otherTypeDef != null) {
-        TypeDefinition typeDef = this.fields[keys[i]];
+        TypeDefinition? typeDef = this.fields[keys[i]];
         if (typeDef != otherTypeDef) {
           return false;
         }
@@ -198,9 +199,7 @@ class ClassDefinition {
   }
 
   hasField(TypeDefinition otherField) {
-    return fields.keys
-            .firstWhere((k) => fields[k] == otherField, orElse: () => null) !=
-        null;
+    return fields.keys.firstWhereOrNull((k) => fields[k] == otherField) != null;
   }
 
   addField(String name, TypeDefinition typeDef) {
@@ -216,7 +215,7 @@ class ClassDefinition {
 
   String get _fieldList {
     return fields.keys.map((key) {
-      final f = fields[key];
+      final f = fields[key]!;
       final fieldName =
           fixFieldName(key, typeDef: f, privateField: privateFields);
       final sb = new StringBuffer();
@@ -229,7 +228,7 @@ class ClassDefinition {
 
   String get _gettersSetters {
     return fields.keys.map((key) {
-      final f = fields[key];
+      final f = fields[key]!;
       final publicFieldName =
           fixFieldName(key, typeDef: f, privateField: false);
       final privateFieldName =
@@ -251,7 +250,7 @@ class ClassDefinition {
     var i = 0;
     var len = fields.keys.length - 1;
     fields.keys.forEach((key) {
-      final f = fields[key];
+      final f = fields[key]!;
       final publicFieldName =
           fixFieldName(key, typeDef: f, privateField: false);
       _addTypeDef(f, sb);
@@ -298,7 +297,7 @@ class ClassDefinition {
     sb.write('\t$name');
     sb.write('.fromJson(Map<String, dynamic> json) {\n');
     fields.keys.forEach((k) {
-      sb.write('\t\t${fields[k].jsonParseExpression(k, privateFields)}\n');
+      sb.write('\t\t${fields[k]!.jsonParseExpression(k, privateFields)}\n');
     });
     sb.write('\t}');
     return sb.toString();
@@ -309,7 +308,7 @@ class ClassDefinition {
     sb.write(
         '\tMap<String, dynamic> toJson() {\n\t\tfinal Map<String, dynamic> data = new Map<String, dynamic>();\n');
     fields.keys.forEach((k) {
-      sb.write('\t\t${fields[k].toJsonExpression(k, privateFields)}\n');
+      sb.write('\t\t${fields[k]!.toJsonExpression(k, privateFields)}\n');
     });
     sb.write('\t\treturn data;\n');
     sb.write('\t}');

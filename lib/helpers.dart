@@ -221,13 +221,12 @@ Node? navigateNode(Node? astNode, String path) {
   Node? node;
   if (astNode is ObjectNode) {
     final ObjectNode objectNode = astNode;
-    final propertyNode = objectNode.children.firstWhere((final prop) {
-      return prop.key!.value == path;
-    },
-        orElse: () {
-          return null;
-        } as PropertyNode Function()?);
-    node = propertyNode.value;
+    try {
+      final propertyNode = objectNode.children.firstWhere((final prop) {
+        return prop.key != null && prop.key!.value == path;
+      });
+      node = propertyNode.value;
+    } catch (_) {}
   }
   if (astNode is ArrayNode) {
     final ArrayNode arrayNode = astNode;

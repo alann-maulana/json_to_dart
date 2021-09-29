@@ -22,12 +22,18 @@ class Hint {
 
 class ModelGenerator {
   final String _rootClassName;
-  final bool _privateFields;
+  final bool privateFields;
+  final bool finalFields;
   List<ClassDefinition> allClasses = <ClassDefinition>[];
   final Map<String, String> sameClassMapping = HashMap<String, String>();
   late List<Hint> hints;
 
-  ModelGenerator(this._rootClassName, [this._privateFields = false, hints]) {
+  ModelGenerator(
+    this._rootClassName, {
+    this.privateFields = false,
+    List<Hint>? hints,
+    this.finalFields = false,
+  }) {
     if (hints != null) {
       this.hints = hints;
     } else {
@@ -50,7 +56,7 @@ class ModelGenerator {
       final Map<dynamic, dynamic> jsonRawData = jsonRawDynamicData;
       final keys = jsonRawData.keys;
       ClassDefinition classDefinition =
-          ClassDefinition(className, _privateFields);
+          ClassDefinition(className, privateFields, finalFields);
       keys.forEach((key) {
         TypeDefinition typeDef;
         final hint = _hintForPath('$path/$key');

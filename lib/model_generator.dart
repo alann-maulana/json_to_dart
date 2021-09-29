@@ -24,7 +24,7 @@ class ModelGenerator {
   final String _rootClassName;
   final bool _privateFields;
   List<ClassDefinition> allClasses = <ClassDefinition>[];
-  final Map<String, String> sameClassMapping = new HashMap<String, String>();
+  final Map<String, String> sameClassMapping = HashMap<String, String>();
   late List<Hint> hints;
 
   ModelGenerator(this._rootClassName, [this._privateFields = false, hints]) {
@@ -50,15 +50,15 @@ class ModelGenerator {
       final Map<dynamic, dynamic> jsonRawData = jsonRawDynamicData;
       final keys = jsonRawData.keys;
       ClassDefinition classDefinition =
-          new ClassDefinition(className, _privateFields);
+          ClassDefinition(className, _privateFields);
       keys.forEach((key) {
         TypeDefinition typeDef;
         final hint = _hintForPath('$path/$key');
         final node = navigateNode(astNode, key);
         if (hint != null) {
-          typeDef = new TypeDefinition(hint.type, astNode: node);
+          typeDef = TypeDefinition(hint.type, astNode: node);
         } else {
-          typeDef = new TypeDefinition.fromDynamic(jsonRawData[key], node);
+          typeDef = TypeDefinition.fromDynamic(jsonRawData[key], node);
         }
         if (typeDef.name == 'Class') {
           typeDef.name = camelCase(key);
@@ -136,8 +136,7 @@ class ModelGenerator {
         }
       });
     });
-    return new DartCode(
-        allClasses.map((c) => c.toString()).join('\n'), warnings);
+    return DartCode(allClasses.map((c) => c.toString()).join('\n'), warnings);
   }
 
   /// generateDartClasses will generate all classes and append one after another
@@ -145,8 +144,8 @@ class ModelGenerator {
   /// formatted JSON string. If the generated dart is invalid it will throw an error.
   DartCode generateDartClasses(String rawJson) {
     final unsafeDartCode = generateUnsafeDart(rawJson);
-    final formatter = new DartFormatter();
-    return new DartCode(
+    final formatter = DartFormatter();
+    return DartCode(
         formatter.format(unsafeDartCode.code), unsafeDartCode.warnings);
   }
 }

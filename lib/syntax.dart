@@ -341,7 +341,7 @@ class ClassDefinition {
   String get _jsonGenFunc {
     final sb = StringBuffer();
     sb.write(
-        '\tMap<String, dynamic> toJson() {\n\t\tfinal Map<String, dynamic> data = Map<String, dynamic>();\n');
+        '\tMap<String, dynamic> toJson() {\n\t\tfinal Map<String, dynamic> data = <String, dynamic>{};\n');
     fields.keys.forEach((k) {
       sb.write('\t\t${fields[k]!.toJsonExpression(k, privateFields)}\n');
     });
